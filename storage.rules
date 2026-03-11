@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Item images ──────────────────────────────────────────────────────────
+    // Path: items/{userId}/{filename}
+    //
+    // - Any signed-in user can read images (required for public feed)
+    // - Only the owning user can upload; max 5 MB; JPEG only
+
+    match /items/{userId}/{filename} {
+      allow read:   if request.auth != null;
+      allow write:  if request.auth != null
+                       && request.auth.uid == userId
+                       && request.resource.size <= 5 * 1024 * 1024
+                       && request.resource.contentType.matches('image/jpeg');
+      allow delete: if false;
+    }
+  }
+}

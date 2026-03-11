@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ─────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function isSchoolEmail() {
+      return request.auth.token.email.matches('.*@feuroosevelt\\.edu\\.ph');
+    }
+
+    // ── Users collection ─────────────────────────────────────────────────────
+    // - Any signed-in user can read any profile (needed for reporter cards)
+    // - Users can only write their own document
+
+    match /users/{userId} {
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn() && isOwner(userId);
+    }
+
+    // ── Items collection ─────────────────────────────────────────────────────
+    // - Any signed-in user can read all items
+    // - Only school-verified users can create items
+    // - Only the reporter can update their own item (e.g. mark as claimed)
+    // - No deletions allowed through the client
+
+    match /items/{itemId} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && isSchoolEmail()
+                       && request.resource.data.reporterId == request.auth.uid;
+      allow update: if isSignedIn()
+                       && resource.data.reporterId == request.auth.uid;
+      allow delete: if false;
+    }
+  }
+}
