@@ -4,8 +4,6 @@
 # 🦌 TamFinds: FEU Roosevelt Lost & Found
 **A dedicated mobile utility for the FEU Roosevelt community to reconnect lost items with their owners.**
 
-![FEU Green](https://img.shields.io/badge/FEU%20Green-%23003829/003829) 
-![FEU Gold](https://img.shields.io/badge/FEU%20Gold-%23FFB81C/FFB81C)
 ![Expo](https://img.shields.io/badge/Expo-000020?style=flat&logo=expo&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=flat&logo=Firebase&logoColor=white)
 
