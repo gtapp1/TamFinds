@@ -16,6 +16,7 @@ export type AppStackParamList = {
   Report: undefined;
   ItemDetail: { itemId: string };
   Profile: undefined;
+  MyReports: undefined;
 };
 
 export type AppNavigationProp = NativeStackNavigationProp<AppStackParamList>;

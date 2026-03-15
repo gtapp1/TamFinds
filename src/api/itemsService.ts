@@ -2,11 +2,11 @@ import {
   collection,
   addDoc,
   doc,
-  getDoc,
   updateDoc,
   serverTimestamp,
   query,
   orderBy,
+  where,
   onSnapshot,
   type Unsubscribe,
 } from 'firebase/firestore';
@@ -56,6 +56,35 @@ export function subscribeToItems(
 }
 
 /**
+ * Real-time listener for items posted by a specific reporter.
+ * Used by the My Reports screen.
+ */
+export function subscribeToItemsByReporter(
+  reporterId: string,
+  onData: (items: LostFoundItem[]) => void,
+  onError?: (err: Error) => void,
+): Unsubscribe {
+  const q = query(
+    collection(db, ITEMS_COLLECTION),
+    where('reporterId', '==', reporterId),
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items = snapshot.docs
+        .map((snap) => ({
+          id: snap.id,
+          ...(snap.data() as Omit<LostFoundItem, 'id'>),
+        }))
+        .sort((a, b) => (b.reportedAt?.seconds ?? 0) - (a.reportedAt?.seconds ?? 0));
+      onData(items);
+    },
+    (err) => onError?.(err),
+  );
+}
+
+/**
  * Attaches a real-time listener to a single item document.
  * Returns null in onData if the document does not exist.
  */
@@ -81,6 +110,13 @@ export function subscribeToItem(
  * Updates the status of an item.
  * Only the reporter should be allowed to call this (enforced in the UI layer).
  */
-export async function updateItemStatus(itemId: string, status: ItemStatus): Promise<void> {
-  await updateDoc(doc(db, ITEMS_COLLECTION, itemId), { status });
+export async function updateItemStatus(
+  itemId: string,
+  status: ItemStatus,
+  claimedBy?: string,
+): Promise<void> {
+  await updateDoc(doc(db, ITEMS_COLLECTION, itemId), {
+    status,
+    ...(claimedBy ? { claimedBy } : {}),
+  });
 }

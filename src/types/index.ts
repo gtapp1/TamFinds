@@ -27,8 +27,27 @@ export interface LostFoundItem {
   status: ItemStatus;
   /** Reference to UserProfile.uid */
   reporterId: string;
+  /** UID of the approved claimant once the item is resolved */
+  claimedBy?: string;
   reportedAt: Timestamp;
   isAtSecurity: boolean;
+}
+
+// ─── Claim Requests ──────────────────────────────────────────────────────────
+
+export type ClaimRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface ClaimRequest {
+  id: string;
+  itemId: string;
+  reporterId: string;
+  requesterId: string;
+  requesterName: string;
+  requesterEmail: string;
+  status: ClaimRequestStatus;
+  createdAt: Timestamp;
+  reviewedAt?: Timestamp;
+  reviewedBy?: string;
 }
 
 // ─── API Helpers ──────────────────────────────────────────────────────────────

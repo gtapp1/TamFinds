@@ -104,6 +104,15 @@ export default function ProfileScreen({ navigation }: Props) {
         <Text style={styles.sectionLabel}>ACTIVITY</Text>
         <TouchableOpacity
           style={styles.linkRow}
+          onPress={() => navigation.navigate('MyReports')}
+          activeOpacity={0.75}
+        >
+          <Text style={styles.linkText}>My Reports</Text>
+          <ChevronRight size={16} color={Colors.textSecondary} strokeWidth={2} />
+        </TouchableOpacity>
+        <View style={styles.separator} />
+        <TouchableOpacity
+          style={styles.linkRow}
           onPress={() => navigation.navigate('Home')}
           activeOpacity={0.75}
         >

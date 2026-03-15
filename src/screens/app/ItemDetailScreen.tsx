@@ -24,17 +24,19 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useItemDetail } from '../../hooks/useItemDetail';
 import { Colors } from '../../theme/colors';
+import { FontFamily } from '../../theme/typography';
 import { ItemDetailSkeleton } from '../../components/Skeleton';
+import TamarawBadge from '../../components/TamarawBadge';
 import type { ItemStatus } from '../../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ItemDetail'>;
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<ItemStatus, { bg: string; text: string; label: string; icon: string }> = {
-  LOST:    { bg: '#FEE2E2', text: Colors.error,         label: 'LOST',    icon: '🔍' },
-  FOUND:   { bg: '#DCFCE7', text: Colors.success,       label: 'FOUND',   icon: '📦' },
-  CLAIMED: { bg: Colors.muted, text: Colors.textSecondary, label: 'CLAIMED', icon: '✅' },
+const STATUS_CONFIG: Record<ItemStatus, { bg: string; text: string; label: string; variant: 'lost' | 'found' | 'claimed' }> = {
+  LOST:    { bg: '#FEE2E2', text: Colors.error,         label: 'LOST',    variant: 'lost' },
+  FOUND:   { bg: '#DCFCE7', text: Colors.success,       label: 'FOUND',   variant: 'found' },
+  CLAIMED: { bg: Colors.muted, text: Colors.textSecondary, label: 'CLAIMED', variant: 'claimed' },
 };
 
 // ─── Relative time ────────────────────────────────────────────────────────────
@@ -74,7 +76,20 @@ function InfoRow({
 
 export default function ItemDetailScreen({ route }: Props) {
   const { itemId } = route.params;
-  const { item, reporter, loading, error, isOwner, claiming, markAsClaimed } = useItemDetail(itemId);
+  const {
+    item,
+    reporter,
+    loading,
+    error,
+    isOwner,
+    claiming,
+    requestingClaim,
+    pendingRequests,
+    hasRequested,
+    markAsClaimed,
+    requestClaim,
+    approveRequest,
+  } = useItemDetail(itemId);
 
   // ── Loading ────────────────────────────────────────────────────────────────
 
@@ -91,7 +106,7 @@ export default function ItemDetailScreen({ route }: Props) {
   if (!item) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.notFoundEmoji}>🗑️</Text>
+        <TamarawBadge size={74} variant="neutral" label="TAM" />
         <Text style={styles.notFoundTitle}>Item no longer exists</Text>
         <Text style={styles.notFoundSub}>It may have been removed.</Text>
       </View>
@@ -140,14 +155,14 @@ export default function ItemDetailScreen({ route }: Props) {
         <Image source={{ uri: item.imageUrl }} style={styles.heroImage} />
       ) : (
         <View style={styles.heroPlaceholder}>
-          <Text style={styles.heroPlaceholderText}>No photo</Text>
+          <TamarawBadge size={82} variant={badge.variant} label={badge.label} />
+          <Text style={styles.heroPlaceholderText}>No photo uploaded</Text>
         </View>
       )}
 
       {/* ── Status bar ── */}
       <View style={[styles.statusBar, { backgroundColor: badge.bg }]}>
-        <Text style={styles.statusBarEmoji}>{badge.icon}</Text>
-        <Text style={[styles.statusBarLabel, { color: badge.text }]}>{badge.label}</Text>
+        <TamarawBadge size={56} variant={badge.variant} label={badge.label} />
         {item.isAtSecurity && (
           <View style={styles.securityPill}>
             <Shield size={12} color={Colors.primary} strokeWidth={2.5} />
@@ -225,6 +240,48 @@ export default function ItemDetailScreen({ route }: Props) {
           </TouchableOpacity>
         )}
 
+        {!isOwner && item.status !== 'CLAIMED' && (
+          <TouchableOpacity
+            style={[styles.requestButton, (requestingClaim || hasRequested) && styles.buttonDisabled]}
+            onPress={requestClaim}
+            disabled={requestingClaim || hasRequested}
+            activeOpacity={0.85}
+          >
+            {requestingClaim ? (
+              <ActivityIndicator color={Colors.surface} size="small" />
+            ) : (
+              <>
+                <Shield size={17} color={Colors.surface} strokeWidth={2.4} />
+                <Text style={styles.requestButtonText}>
+                  {hasRequested ? 'Claim Request Sent' : 'Request Claim'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {isOwner && pendingRequests.length > 0 && item.status !== 'CLAIMED' && (
+          <View style={styles.card}>
+            <Text style={styles.sectionLabel}>PENDING CLAIM REQUESTS</Text>
+            {pendingRequests.map((req) => (
+              <View key={req.id} style={styles.requestRow}>
+                <View style={styles.requestInfo}>
+                  <Text style={styles.requestName}>{req.requesterName}</Text>
+                  <Text style={styles.requestEmail} numberOfLines={1}>{req.requesterEmail}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.approveButton}
+                  onPress={() => approveRequest(req.id, req.requesterId)}
+                  activeOpacity={0.85}
+                  disabled={claiming}
+                >
+                  <Text style={styles.approveButtonText}>Approve</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Mark as Claimed — only for the reporter, only when not already claimed */}
         {isOwner && item.status !== 'CLAIMED' && (
           <TouchableOpacity
@@ -247,7 +304,7 @@ export default function ItemDetailScreen({ route }: Props) {
         {/* Resolved state */}
         {item.status === 'CLAIMED' && (
           <View style={styles.resolvedBanner}>
-            <Text style={styles.resolvedEmoji}>🎉</Text>
+            <TamarawBadge size={56} variant="claimed" label="DONE" />
             <Text style={styles.resolvedText}>This item has been claimed and resolved.</Text>
           </View>
         )}
@@ -270,9 +327,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     padding: 32,
   },
-  notFoundEmoji: { fontSize: 52, marginBottom: 16 },
-  notFoundTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 6 },
-  notFoundSub: { fontSize: 14, color: Colors.textSecondary },
+  notFoundTitle: {
+    fontSize: 18,
+    color: Colors.textPrimary,
+    marginTop: 18,
+    marginBottom: 6,
+    fontFamily: FontFamily.displaySemiBold,
+  },
+  notFoundSub: { fontSize: 14, color: Colors.textSecondary, fontFamily: FontFamily.bodySemiBold },
 
   // Hero
   heroImage: {
@@ -284,24 +346,23 @@ const styles = StyleSheet.create({
   heroPlaceholder: {
     width: '100%',
     height: 180,
-    backgroundColor: Colors.muted,
+    backgroundColor: '#F3F7F4',
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    gap: 12,
   },
-  heroPlaceholderText: { fontSize: 14, color: Colors.textSecondary },
+  heroPlaceholderText: { fontSize: 14, color: Colors.textSecondary, fontFamily: FontFamily.bodySemiBold },
 
   // Status bar
   statusBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
-  statusBarEmoji: { fontSize: 16 },
-  statusBarLabel: { fontSize: 13, fontWeight: '800', letterSpacing: 1 },
   securityPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -312,7 +373,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
   },
-  securityPillText: { fontSize: 11, fontWeight: '700', color: Colors.primary },
+  securityPillText: { fontSize: 11, color: Colors.primary, fontFamily: FontFamily.bodyBold },
 
   // Card
   card: {
@@ -331,7 +392,7 @@ const styles = StyleSheet.create({
   // Title + description
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: FontFamily.displayBold,
     color: Colors.primary,
     marginBottom: 8,
     lineHeight: 28,
@@ -340,11 +401,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textPrimary,
     lineHeight: 22,
+    fontFamily: FontFamily.bodySemiBold,
   },
   descriptionEmpty: {
     fontSize: 14,
     color: Colors.textSecondary,
     fontStyle: 'italic',
+    fontFamily: FontFamily.bodyMedium,
   },
   divider: {
     height: 1,
@@ -370,7 +433,7 @@ const styles = StyleSheet.create({
   infoText: { flex: 1, paddingTop: 2 },
   infoLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -378,7 +441,7 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodySemiBold,
     color: Colors.textPrimary,
   },
 
@@ -393,12 +456,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
   },
-  errorText: { flex: 1, color: Colors.error, fontSize: 13 },
+  errorText: { flex: 1, color: Colors.error, fontSize: 13, fontFamily: FontFamily.bodySemiBold },
 
   // Reporter
   sectionLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     letterSpacing: 0.8,
     marginBottom: 12,
@@ -413,10 +476,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reporterInfo: { flex: 1 },
-  reporterName: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  reporterName: { fontSize: 15, color: Colors.textPrimary, fontFamily: FontFamily.displaySemiBold },
   verifiedBadge: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.success,
     marginTop: 3,
   },
@@ -438,8 +501,22 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.primary,
+  },
+  requestButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 54,
+    backgroundColor: '#0B6A50',
+    borderRadius: 14,
+  },
+  requestButtonText: {
+    fontSize: 16,
+    fontFamily: FontFamily.displaySemiBold,
+    color: Colors.surface,
   },
   claimButton: {
     flexDirection: 'row',
@@ -452,8 +529,42 @@ const styles = StyleSheet.create({
   },
   claimButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.surface,
+  },
+  requestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    gap: 10,
+  },
+  requestInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  requestName: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    fontFamily: FontFamily.displaySemiBold,
+  },
+  requestEmail: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontFamily: FontFamily.bodySemiBold,
+  },
+  approveButton: {
+    height: 34,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    backgroundColor: Colors.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  approveButtonText: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontFamily: FontFamily.bodyBold,
   },
   buttonDisabled: { opacity: 0.6 },
   resolvedBanner: {
@@ -464,11 +575,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
   },
-  resolvedEmoji: { fontSize: 22 },
   resolvedText: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.success,
     lineHeight: 20,
   },

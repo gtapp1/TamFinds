@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MapPin, Shield } from 'lucide-react-native';
+import TamarawBadge from './TamarawBadge';
 import { Colors } from '../theme/colors';
+import { FontFamily } from '../theme/typography';
 import type { LostFoundItem, ItemStatus } from '../types';
 
 // ─── Status badge config ──────────────────────────────────────────────────────
@@ -43,7 +45,12 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
           <Image source={{ uri: item.imageUrl }} style={styles.image} />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text style={styles.imagePlaceholderText}>?</Text>
+            <TamarawBadge
+              size={56}
+              variant={item.status === 'LOST' ? 'lost' : item.status === 'FOUND' ? 'found' : 'claimed'}
+              label="TAM"
+              showLabel={false}
+            />
           </View>
         )}
         {/* Category chip overlaid on image */}
@@ -123,7 +130,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.border,
   },
-  imagePlaceholderText: { fontSize: 32, color: Colors.textSecondary },
   categoryChip: {
     position: 'absolute',
     bottom: 4,
@@ -133,7 +139,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 2,
   },
-  categoryText: { fontSize: 9, fontWeight: '700', color: Colors.accent, letterSpacing: 0.3 },
+  categoryText: { fontSize: 9, color: Colors.accent, letterSpacing: 0.3, fontFamily: FontFamily.bodyBold },
 
   // Content
   content: {
@@ -153,12 +159,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
   },
-  statusText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-  time: { fontSize: 11, color: Colors.textSecondary },
+  statusText: { fontSize: 10, letterSpacing: 0.5, fontFamily: FontFamily.bodyBold },
+  time: { fontSize: 11, color: Colors.textSecondary, fontFamily: FontFamily.bodySemiBold },
 
   title: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.textPrimary,
     lineHeight: 19,
     marginBottom: 5,
@@ -169,7 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  metaText: { fontSize: 12, color: Colors.textSecondary, flex: 1 },
+  metaText: { fontSize: 12, color: Colors.textSecondary, flex: 1, fontFamily: FontFamily.bodySemiBold },
 
   securityBadge: {
     flexDirection: 'row',
@@ -182,7 +188,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
   },
-  securityText: { fontSize: 10, fontWeight: '700', color: Colors.primary },
+  securityText: { fontSize: 10, color: Colors.primary, fontFamily: FontFamily.bodyBold },
 
   // Right accent bar (color-coded by status)
   accentBar: {

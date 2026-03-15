@@ -10,10 +10,12 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../../navigation/types';
 import { useAuth } from '../../hooks/useAuth';
 import { Colors } from '../../theme/colors';
+import { FontFamily } from '../../theme/typography';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
@@ -40,20 +42,21 @@ export default function RegisterScreen({ navigation }: Props) {
   const passwordMismatch = confirm.length > 0 && password !== confirm;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.brand}>TamFinds</Text>
-          <Text style={styles.tagline}>Create your account</Text>
-        </View>
+    <LinearGradient colors={['#003829', '#0A6B52', '#003829']} style={styles.flex}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.brand}>TamFinds</Text>
+            <Text style={styles.tagline}>Create your campus account</Text>
+          </View>
 
-        {/* Form */}
-        <View style={styles.card}>
-          <Text style={styles.title}>Join TamFinds</Text>
+          {/* Form */}
+          <View style={styles.card}>
+            <Text style={styles.title}>Join TamFinds</Text>
 
           {error ? (
             <View style={styles.errorBox}>
@@ -61,96 +64,97 @@ export default function RegisterScreen({ navigation }: Props) {
             </View>
           ) : null}
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={styles.input}
-              value={displayName}
-              onChangeText={(v) => { clearError(); setDisplayName(v); }}
-              placeholder="Juan dela Cruz"
-              placeholderTextColor={Colors.textSecondary}
-              autoCapitalize="words"
-              returnKeyType="next"
-            />
+            <View style={styles.field}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                value={displayName}
+                onChangeText={(v) => { clearError(); setDisplayName(v); }}
+                placeholder="Juan dela Cruz"
+                placeholderTextColor={Colors.textSecondary}
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={(v) => { clearError(); setEmail(v); }}
+                placeholder="you@example.com"
+                placeholderTextColor={Colors.textSecondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                returnKeyType="next"
+              />
+              {isSchoolEmail && email.length > 0 && (
+                <Text style={styles.verifiedBadge}>✓ FEU Roosevelt email — verified account</Text>
+              )}
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Password</Text>
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={(v) => { clearError(); setPassword(v); }}
+                placeholder="At least 6 characters"
+                placeholderTextColor={Colors.textSecondary}
+                secureTextEntry
+                autoComplete="new-password"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Confirm Password</Text>
+              <TextInput
+                style={[styles.input, passwordMismatch && styles.inputError]}
+                value={confirm}
+                onChangeText={setConfirm}
+                placeholder="••••••••"
+                placeholderTextColor={Colors.textSecondary}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleRegister}
+              />
+              {passwordMismatch && (
+                <Text style={styles.fieldError}>Passwords do not match.</Text>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, (loading || passwordMismatch) && styles.buttonDisabled]}
+              onPress={handleRegister}
+              disabled={loading || passwordMismatch}
+              activeOpacity={0.85}
+            >
+              {loading ? (
+                <ActivityIndicator color={Colors.primary} />
+              ) : (
+                <Text style={styles.buttonText}>Create Account</Text>
+              )}
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={(v) => { clearError(); setEmail(v); }}
-              placeholder="you@example.com"
-              placeholderTextColor={Colors.textSecondary}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              returnKeyType="next"
-            />
-            {isSchoolEmail && email.length > 0 && (
-              <Text style={styles.verifiedBadge}>✓ FEU Roosevelt email — verified account</Text>
-            )}
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.footerLink}>Sign In</Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={(v) => { clearError(); setPassword(v); }}
-              placeholder="At least 6 characters"
-              placeholderTextColor={Colors.textSecondary}
-              secureTextEntry
-              autoComplete="new-password"
-              returnKeyType="next"
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <TextInput
-              style={[styles.input, passwordMismatch && styles.inputError]}
-              value={confirm}
-              onChangeText={setConfirm}
-              placeholder="••••••••"
-              placeholderTextColor={Colors.textSecondary}
-              secureTextEntry
-              returnKeyType="done"
-              onSubmitEditing={handleRegister}
-            />
-            {passwordMismatch && (
-              <Text style={styles.fieldError}>Passwords do not match.</Text>
-            )}
-          </View>
-
-          <TouchableOpacity
-            style={[styles.button, (loading || passwordMismatch) && styles.buttonDisabled]}
-            onPress={handleRegister}
-            disabled={loading || passwordMismatch}
-            activeOpacity={0.85}
-          >
-            {loading ? (
-              <ActivityIndicator color={Colors.primary} />
-            ) : (
-              <Text style={styles.buttonText}>Create Account</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.footerLink}>Sign In</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: Colors.primary },
+  flex: { flex: 1 },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -160,7 +164,7 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 36 },
   brand: {
     fontSize: 42,
-    fontWeight: '800',
+    fontFamily: FontFamily.displayBold,
     color: Colors.accent,
     letterSpacing: -1,
   },
@@ -169,20 +173,21 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)',
     marginTop: 4,
     letterSpacing: 0.5,
+    fontFamily: FontFamily.bodySemiBold,
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderRadius: 24,
     padding: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 8,
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 7,
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.primary,
     marginBottom: 20,
   },
@@ -192,11 +197,11 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  errorText: { color: Colors.error, fontSize: 13 },
+  errorText: { color: Colors.error, fontSize: 13, fontFamily: FontFamily.bodySemiBold },
   field: { marginBottom: 16 },
   label: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     marginBottom: 6,
     textTransform: 'uppercase',
@@ -204,21 +209,21 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderRadius: 12,
+    borderWidth: 0,
+    borderRadius: 14,
     paddingHorizontal: 14,
     fontSize: 15,
     color: Colors.textPrimary,
-    backgroundColor: Colors.background,
+    backgroundColor: '#F3F7F4',
+    fontFamily: FontFamily.bodySemiBold,
   },
   inputError: { borderColor: Colors.error },
-  fieldError: { color: Colors.error, fontSize: 12, marginTop: 4 },
+  fieldError: { color: Colors.error, fontSize: 12, marginTop: 4, fontFamily: FontFamily.bodySemiBold },
   verifiedBadge: {
     color: Colors.success,
     fontSize: 12,
     marginTop: 4,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodyBold,
   },
   button: {
     height: 52,
@@ -231,7 +236,7 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.6 },
   buttonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.primary,
     letterSpacing: 0.3,
   },
@@ -240,10 +245,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 28,
   },
-  footerText: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
+  footerText: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontFamily: FontFamily.bodySemiBold },
   footerLink: {
     color: Colors.accent,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
   },
 });

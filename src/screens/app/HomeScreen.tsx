@@ -10,12 +10,14 @@ import {
 } from 'react-native';
 import { Plus, Search, AlertCircle } from 'lucide-react-native';
 import { ItemCardSkeleton } from '../../components/Skeleton';
+import TamarawBadge from '../../components/TamarawBadge';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useItems } from '../../hooks/useItems';
 import { useAuth } from '../../hooks/useAuth';
 import ItemCard from '../../components/ItemCard';
 import { Colors } from '../../theme/colors';
+import { FontFamily } from '../../theme/typography';
 import type { ItemStatus, LostFoundItem } from '../../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
@@ -37,22 +39,22 @@ function EmptyState({ activeTab, query }: { activeTab: FilterTab; query: string 
   if (query.length > 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyEmoji}>🔍</Text>
+        <TamarawBadge size={76} variant="search" label="FIND" />
         <Text style={styles.emptyTitle}>No results for "{query}"</Text>
         <Text style={styles.emptySub}>Try a different keyword or clear the search.</Text>
       </View>
     );
   }
-  const messages: Record<FilterTab, { emoji: string; title: string; sub: string }> = {
-    ALL:     { emoji: '📭', title: 'No items posted yet',    sub: 'Be the first to report a lost or found item.'   },
-    LOST:    { emoji: '😥', title: 'No lost items right now', sub: 'Check back later or report a lost item.'       },
-    FOUND:   { emoji: '🎉', title: 'No found items yet',      sub: 'Report a found item to help someone out!'      },
-    CLAIMED: { emoji: '✅', title: 'Nothing claimed yet',     sub: 'Claimed items will appear here.'               },
+  const messages: Record<FilterTab, { variant: 'neutral' | 'lost' | 'found' | 'claimed'; label: string; title: string; sub: string }> = {
+    ALL:     { variant: 'neutral', label: 'TAM', title: 'No items posted yet',    sub: 'Be the first to report a lost or found item.' },
+    LOST:    { variant: 'lost',    label: 'LOST', title: 'No lost items right now', sub: 'Check back later or report a lost item.' },
+    FOUND:   { variant: 'found',   label: 'FOUND', title: 'No found items yet',      sub: 'Report a found item to help someone out!' },
+    CLAIMED: { variant: 'claimed', label: 'DONE', title: 'Nothing claimed yet',     sub: 'Claimed items will appear here.' },
   };
-  const { emoji, title, sub } = messages[activeTab];
+  const { variant, label, title, sub } = messages[activeTab];
   return (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyEmoji}>{emoji}</Text>
+      <TamarawBadge size={76} variant={variant} label={label} />
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.emptySub}>{sub}</Text>
     </View>
@@ -189,21 +191,25 @@ const styles = StyleSheet.create({
   searchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.95)',
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 8,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderRadius: 16,
     paddingHorizontal: 12,
     height: 44,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   searchIcon: { marginRight: 8 },
   searchInput: {
     flex: 1,
     fontSize: 14,
     color: Colors.textPrimary,
+    fontFamily: FontFamily.bodySemiBold,
   },
 
   // Tabs
@@ -217,15 +223,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.93)',
   },
   tabActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  tabText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
+  tabText: { fontSize: 13, color: Colors.textSecondary, fontFamily: FontFamily.bodyBold },
   tabTextActive: { color: Colors.accent },
 
   // Error
@@ -239,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
-  errorText: { flex: 1, fontSize: 13, color: Colors.error },
+  errorText: { flex: 1, fontSize: 13, color: Colors.error, fontFamily: FontFamily.bodySemiBold },
 
   // List
   listContent: {
@@ -257,12 +261,12 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 32,
   },
-  emptyEmoji: { fontSize: 48, marginBottom: 16 },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.textPrimary,
     marginBottom: 8,
+    marginTop: 18,
     textAlign: 'center',
   },
   emptySub: {
@@ -270,6 +274,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+    fontFamily: FontFamily.bodySemiBold,
   },
 
   // FAB

@@ -1,43 +1,61 @@
-    # Project State
+# Project State
 
-    ## Current Phase: Phase 2 (Core Features)
+## Current Phase: Phase 4 (Campus Identity) - In Progress
 
-    ### Phase 1 — Foundation ✅
-    - [x] Project Manifest Defined
-    - [x] Tech Stack Confirmed (Expo + Firebase)
-    - [x] Firebase Configuration (`src/api/firebaseConfig.ts`) — env-var driven, hot-reload safe
-    - [x] TypeScript Interfaces (`src/types/index.ts`) — UserProfile, LostFoundItem, ItemCategory, ItemStatus
-    - [x] FEU Theme (`src/theme/colors.ts`) — Primary #003829, Accent #FFB81C
-    - [x] NativeWind v4 configured (`tailwind.config.js`, `babel.config.js`, `metro.config.js`, `global.css`)
-    - [x] `useAuth` Hook (`src/hooks/useAuth.ts`) — register, login, logout + `isSchoolVerified` flag
-    - [x] Auth Screens — `LoginScreen.tsx`, `RegisterScreen.tsx` (FEU-branded)
-    - [x] Navigation — `RootNavigator` with Auth stack; typed `AuthStackParamList` & `AppStackParamList`
-    - [x] Base Theme Provider (Green & Gold) applied to all auth screens
+### Phase 1 - Foundation Complete
+- [x] Project manifest and Expo + TypeScript base
+- [x] Firebase app initialization and env-based config
+- [x] Core types and FEU color theme
+- [x] Auth flow (`useAuth`, login, register)
+- [x] Root navigation and stack typing
 
-    ## Current Phase: Phase 3 (Polish) ✅ COMPLETE
+### Phase 2 - Core Features Complete
+- [x] Home feed with realtime Firestore subscription
+- [x] Report item flow (camera/gallery + post)
+- [x] Item detail with reporter contact and claim action
+- [x] Reusable item card and hooks (`useItems`, `useItemDetail`)
 
-    ## Phase 2 — Core Features ✅
-    - [x] Home Feed Screen — real-time Firestore listener (`useItems`) + FlatList
-    - [x] `ItemCard` component — FEU Green/Gold card with status badge, category chip, security badge
-    - [x] Report Screen — Snap & Go (camera + gallery + Storage upload + Firestore write)
-    - [x] `AppNavigator` — auth-gated; authenticated users land on Home Feed
-    - [x] Item Detail Screen — hero image, info rows, Contact Reporter (mailto), Mark as Claimed
-    - [x] `useItemDetail` hook — real-time item listener + one-time reporter profile fetch
-    - [x] `itemsService.updateItemStatus` + `subscribeToItem`
-    - [x] `usersService.getUserById`
+### Phase 3 - Polish Complete
+- [x] Animated skeleton loaders
+- [x] Image compression before upload
+- [x] Profile screen and profile routing
+- [x] Firestore and Storage security rule files
 
-    ## Phase 3 — Polish ✅
-    - [x] `Skeleton.tsx` — animated `SkeletonPulse` (Reanimated native thread) + `ItemCardSkeleton` + `ItemDetailSkeleton`
-    - [x] `imageCompression.ts` — `compressImage()` max 1024px / 75% JPEG via `expo-image-manipulator`
-    - [x] `storageService.ts` — wired compression before upload; clean `${Date.now()}.jpg` filename
-    - [x] `ProfileScreen.tsx` — avatar initials, FEU verified badge, account info, logout with confirmation
-    - [x] Navigation types updated — `Profile: undefined` added to `AppStackParamList`
-    - [x] `RootNavigator` — `ProfileScreen` registered; 👤 `headerLeft` on Home navigates to Profile
-    - [x] `HomeScreen` — replaced static inline skeleton with animated `ItemCardSkeleton`
-    - [x] `ItemDetailScreen` — replaced `ActivityIndicator` loading with `ItemDetailSkeleton`
-    - [x] `firestore.rules` — signed-in reads; school-email creates; owner-only updates; no deletes
-    - [x] `storage.rules` — signed-in reads; owner-only writes ≤5 MB JPEG; no deletes
+### Phase 4 - Campus Identity (Part 1) Complete
+- [x] Added Fredoka + Quicksand packages and Expo font loading
+- [x] Added typography tokens in `src/theme/typography.ts`
+- [x] Added reusable FEU mascot-style badge in `src/components/TamarawBadge.tsx`
+- [x] Restyled auth screens with softer gradients and rounded surfaces
+- [x] Replaced feed empty-state emojis with branded mascot badges
+- [x] Replaced item card and item detail placeholder emojis/badges
+- [x] Updated report screen typography and removed emoji-based CTA labels
+- [x] Updated navigation header icons and title typography
+- [x] Type-check completed with no errors on edited files
 
-    ## Blockers
-    - Firebase project credentials must be added to `.env.local` (see `.env.example`).
-    - Deploy security rules: `firebase deploy --only firestore:rules,storage`
+### Phase 4 - Campus Identity (Part 2) In Progress
+- [x] Added shared design tokens in `src/theme/tokens.ts` (spacing, radius, shadows)
+- [x] Added mascot icon set component in `src/components/mascot/MascotIcon.tsx`
+- [x] Added `MyReports` route, realtime data hook, and full screen UI
+- [x] Wired Profile quick links to `MyReports`
+- [x] Added Firestore claim request service (`create`, `subscribe pending`, `approve`)
+- [x] Extended item detail flow with `Request Claim` for requesters
+- [x] Added owner-side pending request list with `Approve` action in item detail
+- [x] Updated Firestore security rules for `claimRequests` collection
+- [x] Fixed My Reports Firestore index popup by removing server-side sort and sorting client-side
+- [x] Integrated mascot PNG asset icons into `TamarawBadge` and `MascotIcon`
+- [x] Increased mascot icon sizes across screens for better visibility
+- [x] Removed circular mascot badge container and kept larger mascot + status pill layout
+- [x] Removed duplicate status text beside badge in Item Detail (`CLAIMED` shown once)
+- [x] Fixed Item Card overlap between category chip and mascot label (compact badge mode)
+- [x] Type-check completed with no errors on edited files
+
+## Next Up (Phase 4 - Part 2)
+- [ ] Upgrade mascot icon set to true custom SVG illustrations
+- [ ] Add reject/cancel claim request actions and request history status chips
+- [ ] Add owner-only proof-of-ownership prompt before approving claims
+- [ ] Add notifications (in-app or push) for new claim requests
+
+## Remaining Environment Tasks
+- [ ] Ensure Firebase Auth Email/Password is enabled in console
+- [ ] Enable Firebase Storage in project console for photo uploads
+- [ ] Deploy updated rules: `firebase deploy --only firestore:rules,storage`

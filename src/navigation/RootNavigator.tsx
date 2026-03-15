@@ -1,9 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, View, TouchableOpacity, Text } from 'react-native';
+import { ActivityIndicator, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Plus, UserRound } from 'lucide-react-native';
 import { useAuth } from '../hooks/useAuth';
 import { Colors } from '../theme/colors';
+import { FontFamily } from '../theme/typography';
 
 // Screens — Auth
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -14,6 +16,7 @@ import HomeScreen from '../screens/app/HomeScreen';
 import ReportScreen from '../screens/app/ReportScreen';
 import ItemDetailScreen from '../screens/app/ItemDetailScreen';
 import ProfileScreen from '../screens/app/ProfileScreen';
+import MyReportsScreen from '../screens/app/MyReportsScreen';
 
 // Types
 import type { AuthStackParamList, AppStackParamList } from './types';
@@ -47,7 +50,7 @@ function AppNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: Colors.primary },
         headerTintColor: Colors.accent,
-        headerTitleStyle: { fontWeight: '700' },
+        headerTitleStyle: { fontFamily: FontFamily.displaySemiBold, fontSize: 23 },
         contentStyle: { backgroundColor: Colors.background },
       }}
     >
@@ -61,7 +64,7 @@ function AppNavigator() {
               onPress={() => navigation.navigate('Profile')}
               style={{ marginLeft: 4, padding: 4 }}
             >
-              <Text style={{ color: Colors.accent, fontSize: 22 }}>👤</Text>
+              <UserRound color={Colors.accent} size={22} strokeWidth={2.3} />
             </TouchableOpacity>
           ),
           headerRight: () => (
@@ -69,7 +72,7 @@ function AppNavigator() {
               onPress={() => navigation.navigate('Report')}
               style={{ marginRight: 4, padding: 4 }}
             >
-              <Text style={{ color: Colors.accent, fontWeight: '700', fontSize: 24 }}>+</Text>
+              <Plus color={Colors.accent} size={24} strokeWidth={3} />
             </TouchableOpacity>
           ),
         })}
@@ -88,6 +91,11 @@ function AppNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{ title: 'My Profile' }}
+      />
+      <AppStack.Screen
+        name="MyReports"
+        component={MyReportsScreen}
+        options={{ title: 'My Reports' }}
       />
     </AppStack.Navigator>
   );

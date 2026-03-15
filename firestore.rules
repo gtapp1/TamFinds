@@ -40,5 +40,26 @@ service cloud.firestore {
                        && resource.data.reporterId == request.auth.uid;
       allow delete: if false;
     }
+
+    // ── Claim Requests collection ───────────────────────────────────────────
+    // - Requester can create a claim request for an item
+    // - Requester and reporter can read related requests
+    // - Only the reporter can review (approve/reject) a request
+
+    match /claimRequests/{requestId} {
+      allow create: if isSignedIn()
+                       && request.resource.data.requesterId == request.auth.uid;
+
+      allow read: if isSignedIn()
+                    && (
+                      resource.data.requesterId == request.auth.uid
+                      || resource.data.reporterId == request.auth.uid
+                    );
+
+      allow update: if isSignedIn()
+                      && resource.data.reporterId == request.auth.uid;
+
+      allow delete: if false;
+    }
   }
 }

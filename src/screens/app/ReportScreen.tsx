@@ -14,11 +14,13 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, ImageIcon, ChevronDown, AlertCircle } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useReportItem } from '../../hooks/useReportItem';
 import { Colors } from '../../theme/colors';
+import { FontFamily } from '../../theme/typography';
 import type { ReportDraft, ItemCategory, ItemStatus } from '../../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Report'>;
@@ -179,10 +181,15 @@ export default function ReportScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <LinearGradient
+          colors={['#0D4F3D', '#0B6A50']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
           <Text style={styles.headerTitle}>New Report</Text>
           <Text style={styles.headerSub}>Help your fellow Tamaraws</Text>
-        </View>
+        </LinearGradient>
 
         {/* ── 1. Photo ── */}
         <View style={styles.card}>
@@ -229,7 +236,7 @@ export default function ReportScreen({ navigation }: Props) {
             style={styles.input}
             value={draft.title}
             onChangeText={(v) => update('title', v)}
-            placeholder="e.g. FEUR ID, Blue Umbrella, JisuLife"
+            placeholder="e.g. Feu ID, Tumbler, Jisulife"
             placeholderTextColor={Colors.textSecondary}
             maxLength={80}
             returnKeyType="next"
@@ -253,7 +260,7 @@ export default function ReportScreen({ navigation }: Props) {
             style={styles.input}
             value={draft.location}
             onChangeText={(v) => update('location', v)}
-            placeholder="e.g. Library 3F, Room 607, Canteen"
+            placeholder="e.g. TED Library, Room 607, Canteen"
             placeholderTextColor={Colors.textSecondary}
             maxLength={100}
             returnKeyType="done"
@@ -299,7 +306,7 @@ export default function ReportScreen({ navigation }: Props) {
             <ActivityIndicator color={Colors.primary} />
           ) : (
             <Text style={styles.submitText}>
-              {draft.status === 'LOST' ? '🔍 Post Lost Item' : '📦 Post Found Item'}
+              {draft.status === 'LOST' ? 'Post Lost Item' : 'Post Found Item'}
             </Text>
           )}
         </TouchableOpacity>
@@ -324,26 +331,31 @@ const styles = StyleSheet.create({
   },
 
   // Header
-  header: { marginBottom: 4 },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: Colors.primary },
-  headerSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
+  header: {
+    marginBottom: 4,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  headerTitle: { fontSize: 26, color: Colors.accent, fontFamily: FontFamily.displayBold },
+  headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 2, fontFamily: FontFamily.bodySemiBold },
 
   // Card
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderRadius: 18,
     padding: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
 
   // Section label
   sectionLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     letterSpacing: 0.8,
     marginBottom: 12,
@@ -352,7 +364,7 @@ const styles = StyleSheet.create({
   // Field label
   fieldLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     marginBottom: 6,
     marginTop: 4,
@@ -361,14 +373,14 @@ const styles = StyleSheet.create({
   // Input
   input: {
     height: 46,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderRadius: 10,
+    borderWidth: 0,
+    borderRadius: 12,
     paddingHorizontal: 12,
     fontSize: 15,
     color: Colors.textPrimary,
-    backgroundColor: Colors.background,
+    backgroundColor: '#F3F7F4',
     marginBottom: 12,
+    fontFamily: FontFamily.bodySemiBold,
   },
   inputMulti: {
     height: 80,
@@ -394,12 +406,11 @@ const styles = StyleSheet.create({
     height: 52,
     backgroundColor: Colors.muted,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderWidth: 0,
   },
   snapButtonText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FontFamily.displaySemiBold,
     color: Colors.primary,
   },
   imagePreviewWrapper: { position: 'relative' },
@@ -422,7 +433,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
   },
-  retakeText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  retakeText: { fontSize: 12, color: Colors.primary, fontFamily: FontFamily.bodyBold },
 
   // Status toggle
   statusRow: { flexDirection: 'row', gap: 10 },
@@ -431,16 +442,14 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.background,
+    borderRadius: 12,
+    backgroundColor: '#F3F7F4',
   },
   statusChipActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  statusChipText: { fontSize: 14, fontWeight: '700', color: Colors.textSecondary },
+  statusChipText: { fontSize: 14, color: Colors.textSecondary, fontFamily: FontFamily.bodyBold },
   statusChipTextActive: { color: Colors.accent },
 
   // Category grid
@@ -449,15 +458,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.background,
+    backgroundColor: '#F3F7F4',
   },
   categoryChipActive: {
     backgroundColor: Colors.accent,
     borderColor: Colors.accent,
   },
-  categoryChipText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
+  categoryChipText: { fontSize: 13, color: Colors.textSecondary, fontFamily: FontFamily.bodyBold },
   categoryChipTextActive: { color: Colors.primary },
 
   // Security row
@@ -467,8 +474,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   securityTextGroup: { flex: 1 },
-  securityTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
-  securitySub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  securityTitle: { fontSize: 15, color: Colors.textPrimary, fontFamily: FontFamily.displaySemiBold },
+  securitySub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2, fontFamily: FontFamily.bodySemiBold },
 
   // Error
   errorBox: {
@@ -479,7 +486,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
   },
-  errorText: { flex: 1, color: Colors.error, fontSize: 13 },
+  errorText: { flex: 1, color: Colors.error, fontSize: 13, fontFamily: FontFamily.bodySemiBold },
 
   // Submit
   submitButton: {
@@ -491,11 +498,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   submitDisabled: { opacity: 0.5 },
-  submitText: { fontSize: 17, fontWeight: '800', color: Colors.primary },
+  submitText: { fontSize: 17, color: Colors.primary, fontFamily: FontFamily.displayBold },
   uploadingHint: {
     textAlign: 'center',
     fontSize: 13,
     color: Colors.textSecondary,
     marginTop: 8,
+    fontFamily: FontFamily.bodySemiBold,
   },
 });
