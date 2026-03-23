@@ -230,4 +230,4 @@ Reference docs:
 
 ## License
 
-Add your chosen license (for example, MIT) in a `LICENSE` file.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
