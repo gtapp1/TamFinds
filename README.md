@@ -1,6 +1,6 @@
 # TamFinds
 
-Campus lost-and-found mobile application for the FEU Roosevelt community, built with Expo, React Native, and Firebase.
+Campus lost-and-found Mobile Application for the FEU Roosevelt community, built with Expo, React Native, and Firebase.
 
 ![Expo SDK](https://img.shields.io/badge/Expo-SDK%2055-000020?logo=expo&logoColor=white)
 ![React Native](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=white)
