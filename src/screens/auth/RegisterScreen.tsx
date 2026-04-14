@@ -42,7 +42,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const passwordMismatch = confirm.length > 0 && password !== confirm;
 
   return (
-    <LinearGradient colors={['#003829', '#0A6B52', '#003829']} style={styles.flex}>
+    <LinearGradient colors={[Colors.primary, Colors.primaryEmphasis, Colors.primary]} style={styles.flex}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -170,16 +170,16 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
+    color: Colors.surfaceOverlaySubtle,
     marginTop: 4,
     letterSpacing: 0.5,
     fontFamily: FontFamily.bodySemiBold,
   },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: Colors.surfaceOverlayStrong,
     borderRadius: 24,
     padding: 28,
-    shadowColor: '#000',
+    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 20,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   errorBox: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: Colors.errorSoft,
     borderRadius: 10,
     padding: 12,
     marginBottom: 16,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     color: Colors.textPrimary,
-    backgroundColor: '#F3F7F4',
+    backgroundColor: Colors.surfaceAlt,
     fontFamily: FontFamily.bodySemiBold,
   },
   inputError: { borderColor: Colors.error },
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 28,
   },
-  footerText: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontFamily: FontFamily.bodySemiBold },
+  footerText: { color: Colors.surfaceOverlaySubtle, fontSize: 14, fontFamily: FontFamily.bodySemiBold },
   footerLink: {
     color: Colors.accent,
     fontSize: 14,

@@ -8,16 +8,18 @@ import {
   RefreshControl,
   TextInput,
 } from 'react-native';
-import { Plus, Search, AlertCircle } from 'lucide-react-native';
+import { Plus, Search } from 'lucide-react-native';
 import { ItemCardSkeleton } from '../../components/Skeleton';
-import TamarawBadge from '../../components/TamarawBadge';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useItems } from '../../hooks/useItems';
 import { useAuth } from '../../hooks/useAuth';
 import ItemCard from '../../components/ItemCard';
+import EmptyState from '../../components/EmptyState';
+import ErrorState from '../../components/ErrorState';
 import { Colors } from '../../theme/colors';
 import { FontFamily } from '../../theme/typography';
+import { Radius, Shadow, Spacing } from '../../theme/tokens';
 import type { ItemStatus, LostFoundItem } from '../../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
@@ -33,33 +35,12 @@ const TABS: { key: FilterTab; label: string }[] = [
   { key: 'CLAIMED', label: 'Claimed' },
 ];
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
-function EmptyState({ activeTab, query }: { activeTab: FilterTab; query: string }) {
-  if (query.length > 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <TamarawBadge size={76} variant="search" label="FIND" />
-        <Text style={styles.emptyTitle}>No results for "{query}"</Text>
-        <Text style={styles.emptySub}>Try a different keyword or clear the search.</Text>
-      </View>
-    );
-  }
-  const messages: Record<FilterTab, { variant: 'neutral' | 'lost' | 'found' | 'claimed'; label: string; title: string; sub: string }> = {
-    ALL:     { variant: 'neutral', label: 'TAM', title: 'No items posted yet',    sub: 'Be the first to report a lost or found item.' },
-    LOST:    { variant: 'lost',    label: 'LOST', title: 'No lost items right now', sub: 'Check back later or report a lost item.' },
-    FOUND:   { variant: 'found',   label: 'FOUND', title: 'No found items yet',      sub: 'Report a found item to help someone out!' },
-    CLAIMED: { variant: 'claimed', label: 'DONE', title: 'Nothing claimed yet',     sub: 'Claimed items will appear here.' },
-  };
-  const { variant, label, title, sub } = messages[activeTab];
-  return (
-    <View style={styles.emptyContainer}>
-      <TamarawBadge size={76} variant={variant} label={label} />
-      <Text style={styles.emptyTitle}>{title}</Text>
-      <Text style={styles.emptySub}>{sub}</Text>
-    </View>
-  );
-}
+const EMPTY_MESSAGES: Record<FilterTab, { variant: 'neutral' | 'lost' | 'found' | 'claimed'; label: string; title: string; sub: string }> = {
+  ALL:     { variant: 'neutral', label: 'TAM', title: 'No items posted yet',    sub: 'Tap the + button below to report a lost or found item.' },
+  LOST:    { variant: 'lost',    label: 'LOST', title: 'No lost items right now', sub: 'Check back later or tap the + button below to report a lost item.' },
+  FOUND:   { variant: 'found',   label: 'FOUND', title: 'No found items yet',      sub: 'Tap the + button below to report a found item and help someone out!' },
+  CLAIMED: { variant: 'claimed', label: 'DONE', title: 'Nothing claimed yet',     sub: 'Claimed items will appear here.' },
+};
 
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -101,6 +82,15 @@ export default function HomeScreen({ navigation }: Props) {
     [navigation],
   );
 
+  const emptyContent = searchQuery.length > 0
+    ? {
+        variant: 'search' as const,
+        label: 'FIND',
+        title: `No results for "${searchQuery}"`,
+        sub: 'Try a different keyword or clear the search.',
+      }
+    : EMPTY_MESSAGES[activeTab];
+
   return (
     <View style={styles.container}>
       {/* ── Search bar ── */}
@@ -136,10 +126,7 @@ export default function HomeScreen({ navigation }: Props) {
 
       {/* ── Error banner ── */}
       {error ? (
-        <View style={styles.errorBanner}>
-          <AlertCircle size={14} color={Colors.error} />
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
+        <ErrorState compact message={error} style={styles.errorBanner} />
       ) : null}
 
       {/* ── List ── */}
@@ -156,7 +143,14 @@ export default function HomeScreen({ navigation }: Props) {
             styles.listContent,
             filtered.length === 0 && styles.listContentEmpty,
           ]}
-          ListEmptyComponent={<EmptyState activeTab={activeTab} query={searchQuery} />}
+          ListEmptyComponent={(
+            <EmptyState
+              title={emptyContent.title}
+              subtitle={emptyContent.sub}
+              variant={emptyContent.variant}
+              label={emptyContent.label}
+            />
+          )}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -192,19 +186,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.95)',
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 8,
-    borderRadius: 16,
-    paddingHorizontal: 12,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
     height: 44,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    ...Shadow.soft,
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginRight: Spacing.sm },
   searchInput: {
     flex: 1,
     fontSize: 14,
@@ -215,14 +205,14 @@ const styles = StyleSheet.create({
   // Tabs
   tabsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
-    marginBottom: 12,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   tab: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: Radius.pill,
     backgroundColor: 'rgba(255,255,255,0.93)',
   },
   tabActive: {
@@ -234,20 +224,13 @@ const styles = StyleSheet.create({
 
   // Error
   errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginHorizontal: 16,
-    marginBottom: 10,
-    backgroundColor: '#FEE2E2',
-    borderRadius: 10,
-    padding: 10,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm + 2,
   },
-  errorText: { flex: 1, fontSize: 13, color: Colors.error, fontFamily: FontFamily.bodySemiBold },
 
   // List
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: 100,
   },
   listContentEmpty: {
@@ -255,33 +238,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Empty state
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontFamily: FontFamily.displaySemiBold,
-    color: Colors.textPrimary,
-    marginBottom: 8,
-    marginTop: 18,
-    textAlign: 'center',
-  },
-  emptySub: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    fontFamily: FontFamily.bodySemiBold,
-  },
-
   // FAB
   fab: {
     position: 'absolute',
-    bottom: 28,
-    right: 20,
+    bottom: Spacing.xxl,
+    right: Spacing.xl,
     width: 58,
     height: 58,
     borderRadius: 29,

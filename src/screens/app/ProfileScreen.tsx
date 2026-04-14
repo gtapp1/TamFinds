@@ -11,12 +11,23 @@ import { User, Mail, Shield, LogOut, ChevronRight } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useAuth } from '../../hooks/useAuth';
+import LoadingState from '../../components/LoadingState';
 import { Colors } from '../../theme/colors';
+import { FontFamily } from '../../theme/typography';
+import { Radius, Shadow, Spacing } from '../../theme/tokens';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Profile'>;
 
 export default function ProfileScreen({ navigation }: Props) {
   const { user, logout } = useAuth();
+
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <LoadingState message="Loading profile..." />
+      </View>
+    );
+  }
 
   const handleLogout = () => {
     Alert.alert(
@@ -144,13 +155,14 @@ export default function ProfileScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: Colors.background },
-  container: { paddingBottom: 48 },
+  container: { paddingBottom: Spacing.xxl + Spacing.xl },
+  loadingContainer: { flex: 1, backgroundColor: Colors.background },
 
   // Avatar
   avatarSection: {
     alignItems: 'center',
-    paddingTop: 36,
-    paddingBottom: 28,
+    paddingTop: Spacing.xxl + Spacing.sm,
+    paddingBottom: Spacing.xxl,
     backgroundColor: Colors.primary,
   },
   avatarCircle: {
@@ -160,58 +172,54 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
-  avatarInitials: { fontSize: 30, fontWeight: '800', color: Colors.primary },
+  avatarInitials: { fontSize: 30, fontFamily: FontFamily.displayBold, color: Colors.primary },
   displayName: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: FontFamily.displayBold,
     color: Colors.surface,
-    marginBottom: 6,
+    marginBottom: Spacing.sm - 2,
   },
   verifiedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: Spacing.xs + 1,
     backgroundColor: 'rgba(255,255,255,0.12)',
-    paddingHorizontal: 10,
+    paddingHorizontal: Spacing.sm + 2,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: Radius.pill,
   },
-  verifiedText: { fontSize: 12, fontWeight: '600', color: Colors.success },
+  verifiedText: { fontSize: 12, fontFamily: FontFamily.bodySemiBold, color: Colors.success },
 
   // Cards
   card: {
     backgroundColor: Colors.surface,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 16,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.lg,
+    borderRadius: Radius.md,
+    padding: Spacing.lg + 2,
+    ...Shadow.soft,
   },
   sectionLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     letterSpacing: 0.8,
-    marginBottom: 14,
+    marginBottom: Spacing.md + 2,
   },
 
   // Info rows
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.md,
     paddingVertical: 4,
   },
   iconTile: {
     width: 34,
     height: 34,
-    borderRadius: 8,
+    borderRadius: Radius.sm - 2,
     backgroundColor: `${Colors.primary}12`,
     justifyContent: 'center',
     alignItems: 'center',
@@ -219,18 +227,18 @@ const styles = StyleSheet.create({
   infoContent: { flex: 1 },
   infoLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: FontFamily.bodySemiBold,
     color: Colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-    marginBottom: 2,
+    marginBottom: Spacing.xs - 2,
   },
-  infoValue: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
+  infoValue: { fontSize: 15, fontFamily: FontFamily.bodySemiBold, color: Colors.textPrimary },
 
   separator: {
     height: 1,
     backgroundColor: Colors.border,
-    marginVertical: 10,
+    marginVertical: Spacing.sm + 2,
     marginLeft: 46,
   },
 
@@ -239,29 +247,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: Spacing.sm - 2,
   },
-  linkText: { fontSize: 15, fontWeight: '600', color: Colors.primary },
+  linkText: { fontSize: 15, fontFamily: FontFamily.bodySemiBold, color: Colors.primary },
 
   // Logout
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginHorizontal: 16,
-    marginTop: 20,
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.xl,
     height: 52,
-    backgroundColor: '#FEE2E2',
-    borderRadius: 14,
+    backgroundColor: Colors.errorSoft,
+    borderRadius: Radius.md,
   },
-  logoutText: { fontSize: 15, fontWeight: '700', color: Colors.error },
+  logoutText: { fontSize: 15, fontFamily: FontFamily.bodyBold, color: Colors.error },
 
   // Footer
   versionText: {
     textAlign: 'center',
     fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: 24,
+    marginTop: Spacing.xl + Spacing.xs,
   },
 });

@@ -15,12 +15,14 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Camera, ImageIcon, ChevronDown, AlertCircle } from 'lucide-react-native';
+import { Camera, ImageIcon, ChevronDown } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useReportItem } from '../../hooks/useReportItem';
+import ErrorState from '../../components/ErrorState';
 import { Colors } from '../../theme/colors';
 import { FontFamily } from '../../theme/typography';
+import { Radius, Shadow, Spacing } from '../../theme/tokens';
 import type { ReportDraft, ItemCategory, ItemStatus } from '../../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Report'>;
@@ -182,7 +184,7 @@ export default function ReportScreen({ navigation }: Props) {
       >
         {/* Header */}
         <LinearGradient
-          colors={['#0D4F3D', '#0B6A50']}
+          colors={[Colors.primary, Colors.primaryEmphasis]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
@@ -289,10 +291,7 @@ export default function ReportScreen({ navigation }: Props) {
 
         {/* ── Error ── */}
         {error ? (
-          <View style={styles.errorBox}>
-            <AlertCircle size={16} color={Colors.error} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
+          <ErrorState compact message={error} style={styles.errorBox} />
         ) : null}
 
         {/* ── Submit ── */}
@@ -324,18 +323,18 @@ export default function ReportScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: Colors.background },
   container: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 48,
-    gap: 12,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xxl + Spacing.xl,
+    gap: Spacing.md,
   },
 
   // Header
   header: {
-    marginBottom: 4,
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    marginBottom: Spacing.xs,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.lg + 2,
+    paddingVertical: Spacing.lg,
   },
   headerTitle: { fontSize: 26, color: Colors.accent, fontFamily: FontFamily.displayBold },
   headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 2, fontFamily: FontFamily.bodySemiBold },
@@ -343,13 +342,9 @@ const styles = StyleSheet.create({
   // Card
   card: {
     backgroundColor: 'rgba(255,255,255,0.97)',
-    borderRadius: 18,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg + 2,
+    ...Shadow.card,
   },
 
   // Section label
@@ -358,7 +353,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     letterSpacing: 0.8,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
 
   // Field label
@@ -366,46 +361,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
-    marginBottom: 6,
-    marginTop: 4,
+    marginBottom: Spacing.sm - 2,
+    marginTop: Spacing.xs,
   },
 
   // Input
   input: {
     height: 46,
     borderWidth: 0,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderRadius: Radius.sm + 2,
+    paddingHorizontal: Spacing.md,
     fontSize: 15,
     color: Colors.textPrimary,
-    backgroundColor: '#F3F7F4',
-    marginBottom: 12,
+    backgroundColor: Colors.surfaceAlt,
+    marginBottom: Spacing.md,
     fontFamily: FontFamily.bodySemiBold,
   },
   inputMulti: {
     height: 80,
-    paddingTop: 10,
+    paddingTop: Spacing.sm + 2,
   },
 
   // Photo
-  photoButtons: { gap: 10 },
+  photoButtons: { gap: Spacing.sm + 2 },
   snapButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     height: 52,
     backgroundColor: Colors.accent,
-    borderRadius: 12,
+    borderRadius: Radius.sm + 2,
   },
   galleryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     height: 52,
     backgroundColor: Colors.muted,
-    borderRadius: 12,
+    borderRadius: Radius.sm + 2,
     borderWidth: 0,
   },
   snapButtonText: {
@@ -417,33 +412,33 @@ const styles = StyleSheet.create({
   imagePreview: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: Radius.sm + 2,
     resizeMode: 'cover',
     backgroundColor: Colors.border,
   },
   retakeButton: {
     position: 'absolute',
-    bottom: 10,
-    right: 10,
+    bottom: Spacing.sm + 2,
+    right: Spacing.sm + 2,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
     backgroundColor: `${Colors.accent}EE`,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm - 2,
+    borderRadius: Radius.pill,
   },
   retakeText: { fontSize: 12, color: Colors.primary, fontFamily: FontFamily.bodyBold },
 
   // Status toggle
-  statusRow: { flexDirection: 'row', gap: 10 },
+  statusRow: { flexDirection: 'row', gap: Spacing.sm + 2 },
   statusChip: {
     flex: 1,
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#F3F7F4',
+    borderRadius: Radius.sm + 2,
+    backgroundColor: Colors.surfaceAlt,
   },
   statusChipActive: {
     backgroundColor: Colors.primary,
@@ -453,12 +448,12 @@ const styles = StyleSheet.create({
   statusChipTextActive: { color: Colors.accent },
 
   // Category grid
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   categoryChip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F3F7F4',
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.surfaceAlt,
   },
   categoryChipActive: {
     backgroundColor: Colors.accent,
@@ -479,23 +474,17 @@ const styles = StyleSheet.create({
 
   // Error
   errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#FEE2E2',
-    borderRadius: 10,
-    padding: 12,
+    marginTop: Spacing.xs,
   },
-  errorText: { flex: 1, color: Colors.error, fontSize: 13, fontFamily: FontFamily.bodySemiBold },
 
   // Submit
   submitButton: {
     height: 56,
     backgroundColor: Colors.accent,
-    borderRadius: 16,
+    borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   submitDisabled: { opacity: 0.5 },
   submitText: { fontSize: 17, color: Colors.primary, fontFamily: FontFamily.displayBold },
@@ -503,7 +492,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 13,
     color: Colors.textSecondary,
-    marginTop: 8,
+    marginTop: Spacing.sm,
     fontFamily: FontFamily.bodySemiBold,
   },
 });

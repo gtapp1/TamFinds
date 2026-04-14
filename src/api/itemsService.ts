@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   doc,
+  getDoc,
   updateDoc,
   serverTimestamp,
   query,
@@ -104,6 +105,18 @@ export function subscribeToItem(
     },
     (err) => onError?.(err),
   );
+}
+
+/**
+ * One-time fetch for a single item document by id.
+ */
+export async function getItemById(itemId: string): Promise<LostFoundItem | null> {
+  const snap = await getDoc(doc(db, ITEMS_COLLECTION, itemId));
+  if (!snap.exists()) return null;
+  return {
+    id: snap.id,
+    ...(snap.data() as Omit<LostFoundItem, 'id'>),
+  };
 }
 
 /**

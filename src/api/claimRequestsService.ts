@@ -1,7 +1,6 @@
 import {
   collection,
   doc,
-  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -23,17 +22,16 @@ export async function createClaimRequest(input: {
   requesterEmail: string;
 }): Promise<void> {
   const requestId = `${input.itemId}_${input.requesterId}`;
-  const existing = await getDoc(doc(db, CLAIMS_COLLECTION, requestId));
-
-  if (existing.exists() && existing.data().status === 'PENDING') {
-    throw new Error('You already have a pending claim request for this item.');
+  try {
+    // Create directly to avoid rule-blocked pre-reads on non-existent docs.
+    await setDoc(doc(db, CLAIMS_COLLECTION, requestId), {
+      ...input,
+      status: 'PENDING',
+      createdAt: serverTimestamp(),
+    });
+  } catch {
+    throw new Error('Unable to submit claim request. You may already have a request for this item.');
   }
-
-  await setDoc(doc(db, CLAIMS_COLLECTION, requestId), {
-    ...input,
-    status: 'PENDING',
-    createdAt: serverTimestamp(),
-  });
 }
 
 export function subscribePendingClaimRequests(
@@ -61,6 +59,56 @@ export function subscribePendingClaimRequests(
   );
 }
 
+export function subscribeClaimRequestsByRequester(
+  requesterId: string,
+  onData: (requests: ClaimRequest[]) => void,
+  onError?: (err: Error) => void,
+): Unsubscribe {
+  const q = query(
+    collection(db, CLAIMS_COLLECTION),
+    where('requesterId', '==', requesterId),
+  );
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const requests = snap.docs
+        .map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<ClaimRequest, 'id'>),
+        }))
+        .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
+      onData(requests);
+    },
+    (err) => onError?.(err),
+  );
+}
+
+export function subscribeClaimRequestsByReporter(
+  reporterId: string,
+  onData: (requests: ClaimRequest[]) => void,
+  onError?: (err: Error) => void,
+): Unsubscribe {
+  const q = query(
+    collection(db, CLAIMS_COLLECTION),
+    where('reporterId', '==', reporterId),
+  );
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const requests = snap.docs
+        .map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<ClaimRequest, 'id'>),
+        }))
+        .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
+      onData(requests);
+    },
+    (err) => onError?.(err),
+  );
+}
+
 export async function approveClaimRequest(input: {
   claimRequestId: string;
   itemId: string;
@@ -76,5 +124,16 @@ export async function approveClaimRequest(input: {
   await updateDoc(doc(db, 'items', input.itemId), {
     status: 'CLAIMED',
     claimedBy: input.requesterUid,
+  });
+}
+
+export async function rejectClaimRequest(input: {
+  claimRequestId: string;
+  reviewerUid: string;
+}): Promise<void> {
+  await updateDoc(doc(db, CLAIMS_COLLECTION, input.claimRequestId), {
+    status: 'REJECTED',
+    reviewedAt: serverTimestamp(),
+    reviewedBy: input.reviewerUid,
   });
 }
