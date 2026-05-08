@@ -4,6 +4,7 @@ import { getUserById } from '../api/usersService';
 import {
   approveClaimRequest,
   createClaimRequest,
+  rejectClaimRequest,
   subscribePendingClaimRequests,
 } from '../api/claimRequestsService';
 import { auth } from '../api/firebaseConfig';
@@ -26,6 +27,7 @@ interface ItemDetailActions {
   markAsClaimed: () => Promise<void>;
   requestClaim: () => Promise<void>;
   approveRequest: (requestId: string, requesterId: string) => Promise<void>;
+  rejectRequest: (requestId: string) => Promise<void>;
 }
 
 /**
@@ -69,7 +71,7 @@ export function useItemDetail(itemId: string): ItemDetailState & ItemDetailActio
 
   // Realtime pending claim requests for this item
   useEffect(() => {
-    if (!item?.id || item.status === 'CLAIMED') {
+    if (!item?.id || item.status !== 'FOUND') {
       setPendingRequests([]);
       return;
     }
@@ -99,7 +101,7 @@ export function useItemDetail(itemId: string): ItemDetailState & ItemDetailActio
   };
 
   const requestClaim = async () => {
-    if (!item || requestingClaim || !auth.currentUser || isOwner) return;
+    if (!item || item.status !== 'FOUND' || requestingClaim || !auth.currentUser || isOwner) return;
 
     const currentUser = auth.currentUser;
     setRequestingClaim(true);
@@ -119,7 +121,7 @@ export function useItemDetail(itemId: string): ItemDetailState & ItemDetailActio
   };
 
   const approveRequest = async (requestId: string, requesterId: string) => {
-    if (!item || !auth.currentUser || !isOwner || claiming) return;
+    if (!item || item.status !== 'FOUND' || !auth.currentUser || !isOwner || claiming) return;
     setClaiming(true);
     try {
       await approveClaimRequest({
@@ -131,6 +133,21 @@ export function useItemDetail(itemId: string): ItemDetailState & ItemDetailActio
       await updateItemStatus(item.id, 'CLAIMED', requesterId);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to approve claim request.');
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const rejectRequest = async (requestId: string) => {
+    if (!item || item.status !== 'FOUND' || !auth.currentUser || !isOwner || claiming) return;
+    setClaiming(true);
+    try {
+      await rejectClaimRequest({
+        claimRequestId: requestId,
+        reviewerUid: auth.currentUser.uid,
+      });
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to reject claim request.');
     } finally {
       setClaiming(false);
     }
@@ -149,5 +166,6 @@ export function useItemDetail(itemId: string): ItemDetailState & ItemDetailActio
     markAsClaimed,
     requestClaim,
     approveRequest,
+    rejectRequest,
   };
 }

@@ -18,15 +18,17 @@ import {
   CheckCircle,
   Tag,
   User,
-  AlertCircle,
 } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { useItemDetail } from '../../hooks/useItemDetail';
 import { Colors } from '../../theme/colors';
 import { FontFamily } from '../../theme/typography';
+import { Radius, Shadow, Spacing } from '../../theme/tokens';
 import { ItemDetailSkeleton } from '../../components/Skeleton';
 import TamarawBadge from '../../components/TamarawBadge';
+import EmptyState from '../../components/EmptyState';
+import ErrorState from '../../components/ErrorState';
 import type { ItemStatus } from '../../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ItemDetail'>;
@@ -34,8 +36,8 @@ type Props = NativeStackScreenProps<AppStackParamList, 'ItemDetail'>;
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<ItemStatus, { bg: string; text: string; label: string; variant: 'lost' | 'found' | 'claimed' }> = {
-  LOST:    { bg: '#FEE2E2', text: Colors.error,         label: 'LOST',    variant: 'lost' },
-  FOUND:   { bg: '#DCFCE7', text: Colors.success,       label: 'FOUND',   variant: 'found' },
+  LOST:    { bg: Colors.errorSoft, text: Colors.error,         label: 'LOST',    variant: 'lost' },
+  FOUND:   { bg: Colors.successSoft, text: Colors.success,       label: 'FOUND',   variant: 'found' },
   CLAIMED: { bg: Colors.muted, text: Colors.textSecondary, label: 'CLAIMED', variant: 'claimed' },
 };
 
@@ -89,13 +91,14 @@ export default function ItemDetailScreen({ route }: Props) {
     markAsClaimed,
     requestClaim,
     approveRequest,
+    rejectRequest,
   } = useItemDetail(itemId);
 
   // ── Loading ────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: Spacing.xxl + Spacing.xs }}>
         <ItemDetailSkeleton />
       </ScrollView>
     );
@@ -105,11 +108,13 @@ export default function ItemDetailScreen({ route }: Props) {
 
   if (!item) {
     return (
-      <View style={styles.centered}>
-        <TamarawBadge size={74} variant="neutral" label="TAM" />
-        <Text style={styles.notFoundTitle}>Item no longer exists</Text>
-        <Text style={styles.notFoundSub}>It may have been removed.</Text>
-      </View>
+      <EmptyState
+        title="Item no longer exists"
+        subtitle="It may have been removed."
+        variant="neutral"
+        label="TAM"
+        style={styles.centered}
+      />
     );
   }
 
@@ -123,6 +128,17 @@ export default function ItemDetailScreen({ route }: Props) {
     const subject = encodeURIComponent(`TamFinds: Re "${item.title}"`);
     const body = encodeURIComponent(
       `Hi ${reporter.displayName},\n\nI saw your post on TamFinds about "${item.title}".\n\n`,
+    );
+    Linking.openURL(`mailto:${reporter.email}?subject=${subject}&body=${body}`).catch(() =>
+      Alert.alert('Cannot open mail', 'No email app found on this device.'),
+    );
+  };
+
+  const handleFoundThis = () => {
+    if (!reporter?.email) return;
+    const subject = encodeURIComponent(`TamFinds: I found your item "${item.title}"`);
+    const body = encodeURIComponent(
+      `Hi ${reporter.displayName},\n\nI found an item that may match your lost post: "${item.title}".\n\nYou can reply here so we can coordinate safely.\n\n`,
     );
     Linking.openURL(`mailto:${reporter.email}?subject=${subject}&body=${body}`).catch(() =>
       Alert.alert('Cannot open mail', 'No email app found on this device.'),
@@ -205,10 +221,7 @@ export default function ItemDetailScreen({ route }: Props) {
 
       {/* ── Error banner ── */}
       {error ? (
-        <View style={styles.errorBanner}>
-          <AlertCircle size={14} color={Colors.error} />
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
+        <ErrorState compact message={error} style={styles.errorBanner} />
       ) : null}
 
       {/* ── Reporter card ── */}
@@ -234,33 +247,54 @@ export default function ItemDetailScreen({ route }: Props) {
 
         {/* Contact reporter — hidden from the reporter themselves */}
         {!isOwner && reporter?.email && item.status !== 'CLAIMED' && (
-          <TouchableOpacity style={styles.contactButton} onPress={handleContact} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.contactButton} onPress={handleContact} activeOpacity={0.9}>
             <Mail size={18} color={Colors.primary} strokeWidth={2.5} />
             <Text style={styles.contactButtonText}>Contact Reporter</Text>
           </TouchableOpacity>
         )}
 
-        {!isOwner && item.status !== 'CLAIMED' && (
-          <TouchableOpacity
-            style={[styles.requestButton, (requestingClaim || hasRequested) && styles.buttonDisabled]}
-            onPress={requestClaim}
-            disabled={requestingClaim || hasRequested}
-            activeOpacity={0.85}
-          >
-            {requestingClaim ? (
-              <ActivityIndicator color={Colors.surface} size="small" />
+        {!isOwner && item.status === 'FOUND' && (
+          <View style={styles.requestBlock}>
+            <TouchableOpacity
+              style={[styles.requestButton, (requestingClaim || hasRequested) && styles.buttonDisabled]}
+              onPress={requestClaim}
+              disabled={requestingClaim || hasRequested}
+              activeOpacity={0.9}
+            >
+              {requestingClaim ? (
+                <ActivityIndicator color={Colors.surface} size="small" />
+              ) : (
+                <>
+                  <Shield size={17} color={Colors.surface} strokeWidth={2.4} />
+                  <Text style={styles.requestButtonText}>
+                    {hasRequested ? 'Claim Request Sent' : 'Request Claim'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+            {hasRequested ? (
+              <Text style={styles.requestHint}>Your claim request is pending owner review.</Text>
             ) : (
-              <>
-                <Shield size={17} color={Colors.surface} strokeWidth={2.4} />
-                <Text style={styles.requestButtonText}>
-                  {hasRequested ? 'Claim Request Sent' : 'Request Claim'}
-                </Text>
-              </>
+              <Text style={styles.requestHint}>Submit once and wait for owner approval.</Text>
             )}
-          </TouchableOpacity>
+          </View>
         )}
 
-        {isOwner && pendingRequests.length > 0 && item.status !== 'CLAIMED' && (
+        {!isOwner && item.status === 'LOST' && reporter?.email && (
+          <View style={styles.requestBlock}>
+            <TouchableOpacity
+              style={styles.requestButton}
+              onPress={handleFoundThis}
+              activeOpacity={0.9}
+            >
+              <Mail size={17} color={Colors.surface} strokeWidth={2.4} />
+              <Text style={styles.requestButtonText}>I Found This Item</Text>
+            </TouchableOpacity>
+            <Text style={styles.requestHint}>Message the owner directly so they can verify details.</Text>
+          </View>
+        )}
+
+        {isOwner && item.status === 'FOUND' && pendingRequests.length > 0 && (
           <View style={styles.card}>
             <Text style={styles.sectionLabel}>PENDING CLAIM REQUESTS</Text>
             {pendingRequests.map((req) => (
@@ -268,15 +302,28 @@ export default function ItemDetailScreen({ route }: Props) {
                 <View style={styles.requestInfo}>
                   <Text style={styles.requestName}>{req.requesterName}</Text>
                   <Text style={styles.requestEmail} numberOfLines={1}>{req.requesterEmail}</Text>
+                  <Text style={styles.requestMeta}>
+                    Requested {req.createdAt?.seconds ? relativeTime(req.createdAt.seconds) : 'just now'}
+                  </Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.approveButton}
-                  onPress={() => approveRequest(req.id, req.requesterId)}
-                  activeOpacity={0.85}
-                  disabled={claiming}
-                >
-                  <Text style={styles.approveButtonText}>Approve</Text>
-                </TouchableOpacity>
+                <View style={styles.requestActionsCol}>
+                  <TouchableOpacity
+                    style={[styles.approveButton, claiming && styles.buttonDisabled]}
+                    onPress={() => approveRequest(req.id, req.requesterId)}
+                    activeOpacity={0.9}
+                    disabled={claiming}
+                  >
+                    <Text style={styles.approveButtonText}>Approve</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.rejectButton, claiming && styles.buttonDisabled]}
+                    onPress={() => rejectRequest(req.id)}
+                    activeOpacity={0.9}
+                    disabled={claiming}
+                  >
+                    <Text style={styles.rejectButtonText}>Reject</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
           </View>
@@ -288,7 +335,7 @@ export default function ItemDetailScreen({ route }: Props) {
             style={[styles.claimButton, claiming && styles.buttonDisabled]}
             onPress={handleClaim}
             disabled={claiming}
-            activeOpacity={0.85}
+            activeOpacity={0.9}
           >
             {claiming ? (
               <ActivityIndicator color={Colors.surface} size="small" />
@@ -317,24 +364,13 @@ export default function ItemDetailScreen({ route }: Props) {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: Colors.background },
-  container: { paddingBottom: 48 },
+  container: { paddingBottom: Spacing.xxl + Spacing.xl },
 
   // Loading / not found
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: Colors.background,
-    padding: 32,
   },
-  notFoundTitle: {
-    fontSize: 18,
-    color: Colors.textPrimary,
-    marginTop: 18,
-    marginBottom: 6,
-    fontFamily: FontFamily.displaySemiBold,
-  },
-  notFoundSub: { fontSize: 14, color: Colors.textSecondary, fontFamily: FontFamily.bodySemiBold },
 
   // Hero
   heroImage: {
@@ -346,12 +382,12 @@ const styles = StyleSheet.create({
   heroPlaceholder: {
     width: '100%',
     height: 180,
-    backgroundColor: '#F3F7F4',
+    backgroundColor: Colors.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
-    gap: 12,
+    gap: Spacing.md,
   },
   heroPlaceholderText: { fontSize: 14, color: Colors.textSecondary, fontFamily: FontFamily.bodySemiBold },
 
@@ -359,34 +395,30 @@ const styles = StyleSheet.create({
   statusBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    gap: Spacing.sm + 2,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   securityPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
     marginLeft: 'auto',
     backgroundColor: `${Colors.accent}33`,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs - 1,
+    borderRadius: Radius.pill,
   },
   securityPillText: { fontSize: 11, color: Colors.primary, fontFamily: FontFamily.bodyBold },
 
   // Card
   card: {
     backgroundColor: Colors.surface,
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 16,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    borderRadius: Radius.md,
+    padding: Spacing.lg + 2,
+    ...Shadow.soft,
   },
 
   // Title + description
@@ -394,7 +426,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: FontFamily.displayBold,
     color: Colors.primary,
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
     lineHeight: 28,
   },
   description: {
@@ -412,32 +444,32 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: Colors.border,
-    marginVertical: 14,
+    marginVertical: Spacing.md + 2,
   },
 
   // Info rows
   infoRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    marginBottom: 12,
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
   },
   infoIcon: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: Radius.sm - 2,
     backgroundColor: `${Colors.primary}12`,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  infoText: { flex: 1, paddingTop: 2 },
+  infoText: { flex: 1 },
   infoLabel: {
     fontSize: 11,
     fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 2,
+    marginBottom: Spacing.xs - 2,
   },
   infoValue: {
     fontSize: 15,
@@ -447,16 +479,9 @@ const styles = StyleSheet.create({
 
   // Error
   errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginHorizontal: 16,
-    marginTop: 10,
-    backgroundColor: '#FEE2E2',
-    borderRadius: 10,
-    padding: 12,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.sm + 2,
   },
-  errorText: { flex: 1, color: Colors.error, fontSize: 13, fontFamily: FontFamily.bodySemiBold },
 
   // Reporter
   sectionLabel: {
@@ -464,9 +489,9 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bodyBold,
     color: Colors.textSecondary,
     letterSpacing: 0.8,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
-  reporterRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  reporterRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   avatar: {
     width: 44,
     height: 44,
@@ -481,23 +506,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: FontFamily.bodyBold,
     color: Colors.success,
-    marginTop: 3,
+    marginTop: Spacing.xs - 1,
   },
 
   // Actions
   actionsGroup: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    gap: 10,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.lg,
+    gap: Spacing.sm + 2,
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     height: 54,
     backgroundColor: Colors.accent,
-    borderRadius: 14,
+    borderRadius: Radius.md,
   },
   contactButtonText: {
     fontSize: 16,
@@ -508,24 +533,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     height: 54,
-    backgroundColor: '#0B6A50',
-    borderRadius: 14,
+    backgroundColor: Colors.primaryEmphasis,
+    borderRadius: Radius.md,
   },
   requestButtonText: {
     fontSize: 16,
     fontFamily: FontFamily.displaySemiBold,
     color: Colors.surface,
   },
+  requestBlock: {
+    gap: Spacing.xs,
+  },
+  requestHint: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontFamily: FontFamily.bodySemiBold,
+    textAlign: 'center',
+  },
   claimButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     height: 54,
     backgroundColor: Colors.primary,
-    borderRadius: 14,
+    borderRadius: Radius.md,
   },
   claimButtonText: {
     fontSize: 16,
@@ -534,14 +568,14 @@ const styles = StyleSheet.create({
   },
   requestRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    gap: 10,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.sm + 2,
   },
   requestInfo: {
     flex: 1,
-    gap: 2,
+    gap: Spacing.xs - 2,
   },
   requestName: {
     fontSize: 14,
@@ -553,27 +587,50 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: FontFamily.bodySemiBold,
   },
+  requestMeta: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontFamily: FontFamily.bodyMedium,
+  },
+  requestActionsCol: {
+    width: 92,
+    gap: Spacing.xs,
+    alignSelf: 'center',
+  },
   approveButton: {
-    height: 34,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    backgroundColor: Colors.accent,
+    height: 32,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Colors.successSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   approveButtonText: {
     fontSize: 13,
-    color: Colors.primary,
+    color: Colors.success,
+    fontFamily: FontFamily.bodyBold,
+  },
+  rejectButton: {
+    height: 32,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Colors.errorSoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rejectButtonText: {
+    fontSize: 13,
+    color: Colors.error,
     fontFamily: FontFamily.bodyBold,
   },
   buttonDisabled: { opacity: 0.6 },
   resolvedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#DCFCE7',
-    borderRadius: 14,
-    padding: 16,
+    gap: Spacing.sm + 2,
+    backgroundColor: Colors.successSoft,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
   },
   resolvedText: {
     flex: 1,

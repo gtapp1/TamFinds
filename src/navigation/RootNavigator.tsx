@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityIndicator, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Plus, UserRound } from 'lucide-react-native';
+import { UserRound } from 'lucide-react-native';
 import { useAuth } from '../hooks/useAuth';
 import { Colors } from '../theme/colors';
 import { FontFamily } from '../theme/typography';
@@ -65,14 +65,6 @@ function AppNavigator() {
               style={{ marginLeft: 4, padding: 4 }}
             >
               <UserRound color={Colors.accent} size={22} strokeWidth={2.3} />
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Report')}
-              style={{ marginRight: 4, padding: 4 }}
-            >
-              <Plus color={Colors.accent} size={24} strokeWidth={3} />
             </TouchableOpacity>
           ),
         })}

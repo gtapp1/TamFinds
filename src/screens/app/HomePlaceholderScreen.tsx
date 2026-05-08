@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../navigation/types';
 import { Colors } from '../../theme/colors';
+import { FontFamily } from '../../theme/typography';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Home' | 'ItemDetail'>;
 
@@ -37,7 +38,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   emoji: { fontSize: 52, marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '800', color: Colors.primary, marginBottom: 8 },
+  title: { fontSize: 22, fontFamily: FontFamily.displayBold, color: Colors.primary, marginBottom: 8 },
   sub: { fontSize: 14, color: Colors.textSecondary, textAlign: 'center', marginBottom: 32 },
   button: {
     height: 52,
@@ -47,5 +48,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: { fontSize: 16, fontWeight: '700', color: Colors.primary },
+  buttonText: { fontSize: 16, fontFamily: FontFamily.displaySemiBold, color: Colors.primary },
 });

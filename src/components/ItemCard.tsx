@@ -4,13 +4,14 @@ import { MapPin, Shield } from 'lucide-react-native';
 import TamarawBadge from './TamarawBadge';
 import { Colors } from '../theme/colors';
 import { FontFamily } from '../theme/typography';
+import { Radius, Shadow, Spacing } from '../theme/tokens';
 import type { LostFoundItem, ItemStatus } from '../types';
 
 // ─── Status badge config ──────────────────────────────────────────────────────
 
 const STATUS_STYLE: Record<ItemStatus, { bg: string; text: string; label: string }> = {
-  LOST:    { bg: '#FEE2E2', text: Colors.error,   label: 'LOST'    },
-  FOUND:   { bg: '#DCFCE7', text: Colors.success,  label: 'FOUND'   },
+  LOST:    { bg: Colors.errorSoft, text: Colors.error,   label: 'LOST'    },
+  FOUND:   { bg: Colors.successSoft, text: Colors.success,  label: 'FOUND'   },
   CLAIMED: { bg: Colors.muted, text: Colors.textSecondary, label: 'CLAIMED' },
 };
 
@@ -38,7 +39,12 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
     : '';
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.82}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.9}
+      accessibilityRole="button"
+    >
       {/* Left — Image */}
       <View style={styles.imageWrapper}>
         {item.imageUrl ? (
@@ -101,14 +107,10 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: Colors.surface,
-    borderRadius: 16,
+    borderRadius: Radius.md,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 2,
-    marginBottom: 10,
+    marginBottom: Spacing.sm + 2,
+    ...Shadow.soft,
   },
 
   // Left image block
@@ -132,32 +134,32 @@ const styles = StyleSheet.create({
   },
   categoryChip: {
     position: 'absolute',
-    bottom: 4,
-    left: 4,
+    top: Spacing.xs,
+    left: Spacing.xs,
     backgroundColor: 'rgba(0,56,41,0.82)',
-    borderRadius: 6,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    borderRadius: Radius.sm - 2,
+    paddingHorizontal: Spacing.xs + 1,
+    paddingVertical: Spacing.xs - 2,
   },
   categoryText: { fontSize: 9, color: Colors.accent, letterSpacing: 0.3, fontFamily: FontFamily.bodyBold },
 
   // Content
   content: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
     justifyContent: 'space-between',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   statusBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: Spacing.sm - 1,
+    paddingVertical: Spacing.xs - 2,
+    borderRadius: Radius.sm - 2,
   },
   statusText: { fontSize: 10, letterSpacing: 0.5, fontFamily: FontFamily.bodyBold },
   time: { fontSize: 11, color: Colors.textSecondary, fontFamily: FontFamily.bodySemiBold },
@@ -167,26 +169,26 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.displaySemiBold,
     color: Colors.textPrimary,
     lineHeight: 19,
-    marginBottom: 5,
+    marginBottom: Spacing.xs + 1,
   },
 
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
   },
   metaText: { fontSize: 12, color: Colors.textSecondary, flex: 1, fontFamily: FontFamily.bodySemiBold },
 
   securityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 5,
+    gap: Spacing.xs,
+    marginTop: Spacing.xs + 1,
     backgroundColor: `${Colors.accent}28`,
     alignSelf: 'flex-start',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: Spacing.sm - 1,
+    paddingVertical: Spacing.xs - 1,
+    borderRadius: Radius.sm - 2,
   },
   securityText: { fontSize: 10, color: Colors.primary, fontFamily: FontFamily.bodyBold },
 
