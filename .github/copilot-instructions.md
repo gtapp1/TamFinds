@@ -1,24 +1,36 @@
-# Lead AI Architect (OAA-1) Protocol
+# TamFinds AI Instructions
 
-## 1. IDENTITY & GOAL
-You are OAA-1. Your purpose is to provide high-level orchestration, clean modular code, and strategic workflows for rapid development.
-- **Project:** TamFinds (Lost & Found)
-- **Tech Stack:** React Native Expo, Firebase (Auth/Firestore/Storage), TypeScript.
-- **Design System:** FEU Branding (Primary: #003829 | Accent: #FFB81C).
+TamFinds is an Expo React Native app in TypeScript with Firebase Auth, Firestore, and Storage.
 
-## 2. AGENT_RULES (Execution Logic)
-- **Quick-Win Protocol:** If a feature is non-essential for the MVP (e.g., real-time chat), flag it and provide a simplified alternative (e.g., mailto link).
-- **Atomic Standards:** All code must be modular, reusable, and strictly typed.
-- **Context Awareness:** Stay within the Expo and Firebase ecosystem. Do not suggest conflicting libraries.
-- **Auth Policy:** Open enrollment. Support all email domains, but flag @feuroosevelt.edu.ph as 'isSchoolVerified'.
+## Work style
+- Keep changes small, typed, and aligned with the existing app structure.
+- Prefer the project’s own patterns over new libraries or abstractions.
+- If a requested feature is outside the current roadmap, call that out and suggest the simplest viable alternative.
 
-## 3. SKILL_WORKFLOWS (The Build Sequence)
-Follow this order for every feature request:
-1. [SCHEMA]: Define TypeScript interfaces in `src/types/` and Firestore models in `docs/SCHEMA.md`.
-2. [LOGIC]: Create functional logic (custom hooks/services) in `src/hooks/` or `src/api/`.
-3. [UI]: Implement the visual layer using the established Design System.
+## Where to work
+- `src/api/` for Firebase service modules.
+- `src/hooks/` for subscriptions, auth state, and feature state.
+- `src/screens/` for full-screen UI, split into `auth/` and `app/`.
+- `src/components/` for shared UI and mascot pieces.
+- `src/navigation/` for route types and the root navigator.
+- `src/theme/` for colors, typography, and tokens.
+- `src/types/` for shared domain types.
 
-## 4. FLOW_STATE (Roadmap)
-- Phase 1: Foundation (Env Config, Auth, DB Init).
-- Phase 2: Core Features (CRUD operations for Lost/Found items).
-- Phase 3: Polish & Deploy (UI Refinement, Error Handling).x`
+## Key conventions
+- Use `serverTimestamp()` for Firestore write timestamps.
+- Keep realtime data in hooks and clean up subscriptions on unmount.
+- Respect the auth gate in `src/navigation/RootNavigator.tsx`.
+- Keep the FEU palette and typography tokens consistent with the existing design system.
+- Do not bypass image compression before upload.
+- Treat `@feuroosevelt.edu.ph` as school-verified, but support open enrollment.
+
+## Environment and scripts
+- Copy `.env.example` to `.env.local` and fill all `EXPO_PUBLIC_FIREBASE_*` values.
+- Use `npm start`, `npm run android`, `npm run ios`, or `npm run web` from `package.json`.
+- Keep Firebase security rules aligned with `firestore.rules` and `storage.rules`.
+
+## Reference docs
+- [README.md](README.md)
+- [docs/SCHEMA.md](docs/SCHEMA.md)
+- [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md)
+- [docs/IMPLEMENTATION_STEPS.md](docs/IMPLEMENTATION_STEPS.md)
